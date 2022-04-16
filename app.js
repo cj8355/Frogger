@@ -5,9 +5,14 @@ const startPauseBtn = document.querySelector('#start-pause-button')
 const squares = document.querySelectorAll('.grid div')
 const logsLeft = document.querySelectorAll('.log-left')
 const logsRight = document.querySelectorAll('.log-right')
+const carsLeft = document.querySelectorAll('.car-left')
+const carsRight = document.querySelectorAll('.car-right')
 
 
 const width = 9
+let timerId = null
+let currentTime = 20
+let outcomeTimerId
 
 // declaring a variable to keep tract of the position of the frog in the grid
 let currentIndex = 76
@@ -40,15 +45,24 @@ function moveFrog(e) {
 
 }
 
-// event listener to listen for anu keyup inputs so that the frog can then be moved
-document.addEventListener('keyup', moveFrog)
 
-function autoMoveLogs() {
+
+function autoMoveElements() {
+    currentTime--
+    timeLeftDisplay.textContent = currentTime
     logsLeft.forEach(logLeft => moveLogLeft(logLeft)) 
     logsRight.forEach(logRight => moveLogRight(logRight)) 
+    carsLeft.forEach(carLeft => moveCarLeft(carLeft))
+    carsRight.forEach(carRight => moveCarRight(carRight))
+    
 }
 
-autoMoveLogs
+function checkOutComes() {
+    lose()
+    win()
+}
+
+
 
 function moveLogLeft(logLeft) {
     switch(true) {
@@ -72,6 +86,24 @@ function moveLogLeft(logLeft) {
             logLeft.classList.remove('l5')
             logLeft.classList.add('l1')
             break
+    }
+}
+
+function moveCarLeft(carLeft) {
+    switch(true) {
+        case carLeft.classList.contains('c1') :
+            carLeft.classList.remove('c1')
+            carLeft.classList.add('c2')
+            break
+        case carLeft.classList.contains('c2') :
+            carLeft.classList.remove('c2')
+            carLeft.classList.add('c3')
+            break  
+        case carLeft.classList.contains('c3') :
+            carLeft.classList.remove('c3')
+            carLeft.classList.add('c1')
+            break  
+   
     }
 }
 
@@ -102,4 +134,62 @@ function moveLogRight(logRight) {
 }
 
 
-setInterval(autoMoveLogs, 1000)
+function moveCarRight(carRight) {
+    switch(true) {
+        case carRight.classList.contains('c1') :
+            carRight.classList.remove('c1')
+            carRight.classList.add('c3')
+            break
+        case carRight.classList.contains('c2') :
+            carRight.classList.remove('c2')
+            carRight.classList.add('c1')
+            break  
+        case carRight.classList.contains('c3') :
+            carRight.classList.remove('c3')
+            carRight.classList.add('c2')
+            break  
+       
+    }
+}
+
+function lose() {
+    if (
+        squares[currentIndex].classList.contains('c1') ||
+        squares[currentIndex].classList.contains('l4') ||
+        squares[currentIndex].classList.contains('l5') ||
+        currentTime <= 0
+        ) {
+        resultDisplay.textContent = 'You lose'
+        clearInterval(timerId)
+        clearInterval(outcomeTimerId)
+        squares[currentIndex].classList.remove('frog')
+        document.removeEventListener('keyup', moveFrog)
+    }
+}
+
+
+function win() {
+    if (squares[currentIndex].classList.contains('ending-block')) {
+        resultDisplay.textContent = 'You win'
+        clearInterval(timerId)
+        clearInterval(outcomeTimerId)
+        document.removeEventListener('keyup', moveFrog)
+    
+    }
+}
+    
+
+startPauseBtn.addEventListener('click',() => {
+    if (timerId) {
+        clearInterval(timerId)
+        clearInterval(outcomeTimerId)
+        outcomeTimerId = null
+        timerId = null
+        document.removeEventListener('keyup', moveFrog)
+    } else {
+        timerId = setInterval(autoMoveElements, 1000)
+        outcomeTimerId = setInterval(checkOutComes, 50)
+        // event listener to listen for anu keyup inputs so that the frog can then be moved
+        document.addEventListener('keyup', moveFrog)
+    }
+})
